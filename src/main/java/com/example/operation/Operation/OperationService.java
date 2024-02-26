@@ -5,10 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.operation.Classe.ClassService;
-import com.example.operation.Classe.Classe;
-import com.example.operation.Classe.ClasseRepo;
-
 
 @Service
 public class OperationService implements OpService {
