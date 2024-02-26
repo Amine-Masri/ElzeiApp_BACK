@@ -34,16 +34,30 @@ public class OperationService implements OpService {
 	        }
 	        return null;
 	}
-	 public Operation update(Long id, Operation updatedOperation) {
-	        Operation existingoperation = findById(id);
-	        if (existingoperation != null) {
-	        	existingoperation.setDescription(updatedOperation.getDescription());
-	        	existingoperation.setTauxTVA(updatedOperation.getTauxTVA());
-	        	existingoperation.setTVAdeductible(updatedOperation.getTVAdeductible());
-	            return operationRepo.save(existingoperation);
+	
+	@Override
+	public Operation update(Long id, Operation updatedOperation) {
+	    Operation existingOperation = findById(id);
+	    if (existingOperation != null) {
+	        if (updatedOperation.getDescription() != null) {
+	            existingOperation.setDescription(updatedOperation.getDescription());
 	        }
-	        return null;
+
+	        if (updatedOperation.getTauxTVA() != 0.0) {
+	            existingOperation.setTauxTVA(updatedOperation.getTauxTVA());
+	        }
+
+	        if (updatedOperation.getTVAdeductible() != null) {
+	            existingOperation.setTVAdeductible(updatedOperation.getTVAdeductible());
+	        }
+
+	        // Ajoutez des conditions similaires pour les autres champs que vous souhaitez mettre à jour
+
+	        return operationRepo.save(existingOperation);
 	    }
+	    return null;
+	}
+
 
 	@Override
 	public Operation save(Operation operation) {

@@ -8,33 +8,43 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.operation.Operation.OpService;
+import com.example.operation.Operation.Operation;
+
 @Service
 public class JustificatifService {
 
     @Autowired
     private JustificatifRepo repository;
+    @Autowired
+    private OpService operationService; // Assurez-vous d'avoir un service pour gérer les opérations
+
 
     private JustificatifInterface justificatifInterface = new JustificatifInterface();
 
-    public String uploadImage(MultipartFile file, String description) {
-    	 if (description == null) {
- 	        // Si la description est null, vous pouvez choisir de la traiter d'une manière spécifique
- 	        // Par exemple, assigner une valeur par défaut ou l'ignorer selon vos besoins.
- 	        description = "Description par défaut";
- 	    }
-    	try {
-        	  
-            byte[] compressedImage = justificatifInterface.compressImage(file.getBytes());
+    public String uploadImage(MultipartFile file, String description, Long operationId) {
+        if (description == null) {
+            // Si la description est null, vous pouvez choisir de la traiter d'une manière spécifique
+            // Par exemple, assigner une valeur par défaut ou l'ignorer selon vos besoins.
+            description = "Description par défaut";
+        }
+        try {
+            // Récupérer l'opération associée
+            Operation operation = operationService.findById(operationId);
 
-            Justificatif justificatif = repository.save(Justificatif.builder()
-                    .description(description)
-                    .fichier(compressedImage)
-                    .build());
+            if (operation != null) {
+                byte[] compressedImage = justificatifInterface.compressImage(file.getBytes());
 
-            if (justificatif != null) {
+                // Associer le justificatif à l'opération
+                Justificatif justificatif = repository.save(Justificatif.builder()
+                        .description(description)
+                        .fichier(compressedImage)
+                        .operation(operation) // Associer le justificatif à l'opération
+                        .build());
+
                 return "File uploaded successfully: " + file.getOriginalFilename();
             } else {
-                return "Failed to upload file: " + file.getOriginalFilename();
+                return "Operation not found with ID: " + operationId;
             }
         } catch (IOException e) {
             e.printStackTrace(); // Ajoutez un logging approprié
@@ -45,13 +55,10 @@ public class JustificatifService {
     public byte[] downloadImage(long id) {
         Optional<Justificatif> dbImageData = repository.findById(id);
 
-        if (dbImageData.isPresent()) {
-            return justificatifInterface.decompressImage(dbImageData.get().getFichier());
-        } else {
-            // Gérer le cas où l'ID n'existe pas
-            return new byte[0];
-        }
+        return dbImageData.map(justificatif -> justificatifInterface.decompressImage(justificatif.getFichier()))
+                          .orElse(new byte[0]);
     }
+
 
     public Justificatif saveJustificatif(Justificatif justificatif) {
         return repository.save(justificatif);

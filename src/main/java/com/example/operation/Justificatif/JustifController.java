@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/v1/test/justificatif")
 @CrossOrigin(origins = "http://localhost:4200")
-
 public class JustifController {
 
     @Autowired
@@ -22,14 +21,15 @@ public class JustifController {
 
     @PostMapping("/upload")
     public ResponseEntity<String> uploadJustificatif(@RequestParam("file") MultipartFile file,
-                                                    @RequestParam(required = false) String description) throws IOException {
+                                                    @RequestParam(required = false) String description ,                                              
+    										@RequestParam("operationId") Long operationId) throws IOException {
+
         // Traitez le fichier individuellement (enregistrement en base de données, compression, etc.)
-        String response = justificatifService.uploadImage(file, description);
+        String response = justificatifService.uploadImage(file, description,operationId);
         // Vous pouvez logguer la réponse ou la stocker pour un traitement ultérieur
 
         return ResponseEntity.ok("{\"message\": \"File uploaded successfully\"}");
     }
-
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadJustificatif(@PathVariable long id) {
         try {
@@ -40,20 +40,12 @@ public class JustifController {
         }
     }
 
-    // Ajoutez d'autres méthodes CRUD au besoin
-
-    // Exemple de méthode CRUD
     @GetMapping("/get/{id}")
     public ResponseEntity<Justificatif> getJustificatif(@PathVariable long id) {
-        try {
-            Optional<Justificatif> justificatif = justificatifService.getJustificatifById(id);
-            return justificatif.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        Optional<Justificatif> justificatif = justificatifService.getJustificatifById(id);
+        return justificatif.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Exemple de méthode CRUD
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteJustificatif(@PathVariable long id) {
         try {
